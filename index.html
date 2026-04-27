@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Base de Datos 2 · Actividades semanales (UPLA)</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container">
+        <div class="brand">
+          <div class="brand__title">Base de Datos 2</div>
+          <div class="brand__subtitle">
+            Universidad Peruana Los Andes · Actividades semanales del semestre · Howard Achcaray Cortez
+          </div>
+        </div>
+        <div class="topbar__actions">
+          <button id="btnAdd" class="btn" type="button" title="Abrir en otra pestaña">
+            Agregar actividad
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container main">
+      <section class="card hero">
+        <div class="hero__inner">
+          <div class="hero__profile">
+            <div class="avatar" aria-hidden="true">HA</div>
+            <div class="hero__who">
+              <div class="hero__name">Howard Achcaray Cortez</div>
+              <div class="hero__meta">Base de Datos 2 · UPLA · Semestre académico</div>
+            </div>
+          </div>
+          <p class="hero__desc">
+            Mi nombre es Howard Achcaray Cortez. Este espacio ha sido desarrollado con fines académicos para registrar,
+            organizar y presentar de manera clara las actividades semanales del curso <strong>Base de Datos 2</strong>
+            de la Universidad Peruana Los Andes, facilitando el seguimiento del avance del semestre y la consulta de
+            los contenidos abordados en cada semana.
+          </p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Actividades del semestre</h2>
+          <div class="filters">
+            <label class="field field--inline">
+              <span class="field__label">Filtrar por semana</span>
+              <select id="weekFilter">
+                <option value="all">Todas</option>
+              </select>
+            </label>
+            <div class="search">
+              <input id="search" type="search" placeholder="Buscar por título o descripción..." />
+            </div>
+          </div>
+        </div>
+
+        <div id="stats" class="stats" aria-live="polite"></div>
+        <div id="list" class="list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <span>Base de Datos 2 · Howard Achcaray Cortez</span>
+        <span class="footer__muted">UPLA</span>
+      </div>
+    </footer>
+
+    <dialog id="dialog" class="dialog">
+      <form method="dialog" class="dialog__panel">
+        <h3 id="dialogTitle" class="dialog__title">Mensaje</h3>
+        <p id="dialogBody" class="dialog__body"></p>
+        <div class="dialog__actions">
+          <button class="btn" value="ok">Aceptar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="pdfDialog" class="dialog dialog--pdf">
+      <form method="dialog" class="dialog__panel dialog__panel--pdf">
+        <div class="pdfHead">
+          <div>
+            <div class="dialog__title">Previsualización PDF</div>
+            <div id="pdfName" class="pdfName"></div>
+          </div>
+          <div class="pdfHead__actions">
+            <a id="pdfOpenTab" class="btn btn--ghost mini" target="_blank" rel="noopener noreferrer">Abrir en pestaña</a>
+            <button class="btn mini" value="close">Cerrar</button>
+          </div>
+        </div>
+        <iframe id="pdfFrame" class="pdfFrame" title="Previsualización PDF"></iframe>
+      </form>
+    </dialog>
+
+    <script src="./pdfStore.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
