@@ -39,13 +39,15 @@ function saveActivities(items) {
 }
 
 function normalizeActivity(input) {
-  const week = Number(input.week);
+  if (typeof Bd2Course === "undefined") throw new Error("Falta cargar curriculum.js.");
+  const weekRaw = Number(input.week);
+  const week = Bd2Course.clampWeek(weekRaw);
   const date = String(input.date || "").trim();
   const title = String(input.title || "").trim();
   const description = String(input.description || "").trim();
   const link = String(input.link || "").trim();
 
-  if (!Number.isFinite(week) || week < 1 || week > 30) throw new Error("Semana inválida.");
+  if (!Number.isFinite(weekRaw) || weekRaw < 1) throw new Error("Semana global inválida.");
   if (!date) throw new Error("La fecha es obligatoria.");
   if (!title) throw new Error("El título es obligatorio.");
 
@@ -90,8 +92,41 @@ function setLoggedIn(v) {
   sessionStorage.setItem(SESSION_KEY, v ? "1" : "0");
 }
 
+function fillUnitSelect() {
+  const sel = $("unit");
+  sel.innerHTML = Bd2Course.UNITS.map(
+    (u) =>
+      `<option value="${u.id}">${u.label} · ${escapeHtmlOptionText(u.shortTitle)}</option>`,
+  ).join("");
+}
+
+function escapeHtmlOptionText(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function syncAbsWeekFromUnitFields() {
+  const u = Number($("unit").value);
+  const wi = Number($("weekInUnit").value);
+  const abs = Bd2Course.absWeek(u, wi);
+  $("week").value = String(abs);
+  const el = document.getElementById("weekAbsLabel");
+  if (el) el.textContent = String(abs);
+  const meta = Bd2Course.getUnitMeta(Number.isFinite(u) ? u : 1);
+  const sum = document.getElementById("unitSummary");
+  if (sum) sum.textContent = `${meta.label}: ${meta.title}`;
+}
+
 function setFormData(data) {
-  $("week").value = data.week ?? 1;
+  if (typeof Bd2Course === "undefined") return;
+  const abs = Bd2Course.clampWeek(data.week ?? 1);
+  const { unit, weekInUnit } = Bd2Course.splitWeek(abs);
+  $("unit").value = String(unit);
+  $("weekInUnit").value = String(weekInUnit);
+  $("week").value = String(abs);
+  syncAbsWeekFromUnitFields();
   $("date").value = data.date ?? todayISO();
   $("title").value = data.title ?? "";
   $("description").value = data.description ?? "";
@@ -116,6 +151,7 @@ function setFormData(data) {
 }
 
 function getFormData() {
+  syncAbsWeekFromUnitFields();
   return {
     week: $("week").value,
     date: $("date").value,
@@ -187,6 +223,9 @@ function wireEvents() {
     $("activityForm").dataset.editingId = "";
     setFormData({ week: 1, date: todayISO(), title: "", description: "", link: "", pdfKey: "", pdfName: "" });
   });
+
+  $("unit").addEventListener("change", syncAbsWeekFromUnitFields);
+  $("weekInUnit").addEventListener("change", syncAbsWeekFromUnitFields);
 
   $("pdf").addEventListener("change", (e) => {
     const file = e.currentTarget.files?.[0] || null;
@@ -264,10 +303,16 @@ function wireEvents() {
 }
 
 function main() {
+  if (typeof Bd2Course === "undefined") {
+    showDialog("Error", "No se pudo cargar la definición del curso (curriculum.js).");
+    return;
+  }
+  fillUnitSelect();
   if (!isLoggedIn()) setLoggedIn(false);
   showLoggedState();
   wireEvents();
   if (isLoggedIn()) loadForEditIfNeeded();
+  else syncAbsWeekFromUnitFields();
 
   window.addEventListener("beforeunload", () => {
     if (activePreviewUrl) URL.revokeObjectURL(activePreviewUrl);

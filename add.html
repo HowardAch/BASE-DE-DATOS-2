@@ -6,23 +6,23 @@
     <title>Agregar actividad · Base de Datos 2 (UPLA)</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
-    <header class="topbar">
-      <div class="container">
-        <div class="brand">
-          <div class="brand__title">Base de Datos 2</div>
-          <div class="brand__subtitle">
-            UPLA · Panel de registro · Howard Achcaray Cortez
-          </div>
-        </div>
-        <div class="topbar__actions">
-          <a class="btn btn--ghost" href="./index.html">Volver</a>
-          <button id="btnLogout" class="btn btn--ghost" type="button">Cerrar sesión</button>
+  <body class="nf">
+    <header class="topbar nf-topbar">
+      <div class="nf-topbar__inner">
+        <a class="nf-logo" href="./index.html">UPLA</a>
+        <nav class="nf-nav" aria-label="Principal">
+          <a class="nf-nav__link" href="./index.html">Inicio</a>
+          <a class="nf-nav__link" href="./index.html#ayuda">Cómo usar</a>
+          <a class="nf-nav__link nf-nav__link--active" href="./add.html">Agregar</a>
+        </nav>
+        <div class="topbar__actions nf-topbar__actions">
+          <a class="btn btn--ghost nf-btn-ghost" href="./index.html">Volver</a>
+          <button id="btnLogout" class="btn btn--ghost nf-btn-ghost" type="button">Cerrar sesión</button>
         </div>
       </div>
     </header>
 
-    <main class="container main">
+    <main class="container main nf-add-main">
       <section id="loginCard" class="card">
         <div class="card__header">
           <h2 class="card__title">Iniciar sesión</h2>
@@ -55,8 +55,29 @@
         <form id="activityForm" class="form">
           <div class="grid">
             <label class="field">
-              <span class="field__label">Semana</span>
-              <input id="week" type="number" min="1" max="18" value="1" required />
+              <span class="field__label">Unidad del curso</span>
+              <select id="unit" required aria-describedby="weekExplainer">
+                <!-- options en add.js desde Bd2Course -->
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Semana en esa unidad (1–4)</span>
+              <select id="weekInUnit" required aria-describedby="weekExplainer">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </label>
+
+            <label class="field grid__span2">
+              <span class="field__label">Posición en el semestre</span>
+              <p id="weekExplainer" class="hint nf-week-explainer">
+                Semana global <strong id="weekAbsLabel">1</strong> de 16 ·
+                <span id="unitSummary">Unidad I</span>
+              </p>
+              <input id="week" type="hidden" value="1" />
             </label>
 
             <label class="field">
@@ -114,6 +135,7 @@
     </dialog>
 
     <script src="./pdfStore.js"></script>
+    <script src="./curriculum.js"></script>
     <script src="./add.js"></script>
   </body>
 </html>

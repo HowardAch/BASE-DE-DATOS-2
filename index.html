@@ -6,67 +6,176 @@
     <title>Base de Datos II · Actividades semanales (UPLA)</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
-    <header class="topbar">
-      <div class="container">
-        <div class="brand">
-          <div class="brand__title">Base de Datos II</div>
-          <div class="brand__subtitle">
-            Universidad Peruana Los Andes · Actividades semanales del semestre · Howard Achcaray Cortez
-          </div>
-        </div>
-        <div class="topbar__actions">
-          <button id="btnAdd" class="btn" type="button" title="Abrir en otra pestaña">
+  <body class="nf">
+    <a class="skip-link" href="#browse">Saltar al contenido principal</a>
+    <header class="topbar nf-topbar">
+      <div class="nf-topbar__inner">
+        <a class="nf-logo" href="./index.html" aria-label="Inicio">UPLA</a>
+        <nav class="nf-nav" aria-label="Principal">
+          <a class="nf-nav__link nf-nav__link--active" href="./index.html">Inicio</a>
+          <a class="nf-nav__link" href="#browse">Actividades</a>
+          <a class="nf-nav__link" href="#ayuda">Cómo usar</a>
+        </nav>
+        <div class="topbar__actions nf-topbar__actions">
+          <button id="btnAdd" class="btn nf-btn-primary" type="button" title="Abrir en otra pestaña">
             Agregar actividad
           </button>
+          <div class="nf-avatar" aria-hidden="true" title="Perfil">HA</div>
         </div>
       </div>
     </header>
 
-    <main class="container main">
-      <section class="card hero">
-        <div class="hero__inner">
-          <div class="hero__profile">
-            <div class="avatar" aria-hidden="true">HA</div>
-            <div class="hero__who">
-              <div class="hero__name">Howard Achcaray Cortez</div>
-              <div class="hero__meta">Base de Datos II · UPLA · Semestre académico</div>
+    <section class="nf-hero" aria-label="Presentación">
+      <div class="nf-hero__backdrop" aria-hidden="true"></div>
+      <div class="nf-hero__vignette" aria-hidden="true"></div>
+      <div class="nf-hero__content">
+        <p class="nf-hero__badge">Ciclo académico 2026 -1 · UPLA</p>
+        <p class="nf-hero__eyebrow">Base de Datos II </p>
+        <h1 class="nf-hero__title">ACHCARAY CORTEZ HOWARD </h1>
+        <p class="nf-hero__synopsis">
+          Registra y consulta las actividades semanales del curso
+          <strong>Base de Datos II</strong> (Universidad Peruana Los Andes). Todo se guarda en
+          <strong>este navegador</strong>: ideal para organizar tu avance y presentar tu trabajo.
+        </p>
+        <div class="nf-hero__actions">
+          <a class="btn nf-btn-primary nf-hero__cta" href="#browse">Ver actividades</a>
+          <button id="btnAddHero" class="btn btn--ghost nf-hero__cta-ghost" type="button">
+            Registrar actividad
+          </button>
+        </div>
+        <ul id="heroSummary" class="nf-chips" aria-label="Resumen del portafolio"></ul>
+      </div>
+    </section>
+
+    <main id="browse" class="nf-main">
+      <div class="nf-main__head">
+        <h2 class="nf-main__title">Catálogo de actividades</h2>
+        <p class="nf-main__lead">
+          El curso está organizado en <strong>cuatro unidades</strong> de cuatro semanas cada una (16 semanas en total).
+          Dentro de cada unidad, cada <strong>semana del semestre</strong> es una fila que puedes desplazar en
+          horizontal. Sobre cada tarjeta: pasa el ratón o usa <kbd>Tab</kbd> para ver descripción, PDF o enlace.
+        </p>
+      </div>
+
+      <section class="nf-units-strip" aria-labelledby="unitsStripTitle">
+        <h3 id="unitsStripTitle" class="nf-units-strip__title">Unidades y semanas del semestre</h3>
+        <p class="nf-units-strip__hint">Cada botón filtra por una <strong>semana global</strong> (1–16). También salta al bloque de esa unidad más abajo.</p>
+        <div class="nf-units-strip__grid">
+          <div class="nf-units-strip__row">
+            <div class="nf-units-strip__unitlabel">
+              <a class="nf-units-strip__unitlink" href="#unidad-1">Unidad I</a>
+              <span class="nf-units-strip__subtitle">Arquitectura de BD</span>
+            </div>
+            <div class="nf-units-strip__weeks" role="group" aria-label="Semanas de la unidad I">
+              <button type="button" class="nf-week-btn" data-unit="1" data-global-week="1" data-in-unit="1" title="Semana global 1 · Unidad I · S1/4" aria-pressed="false">S1<span class="nf-week-btn__g">1</span></button>
+              <button type="button" class="nf-week-btn" data-unit="1" data-global-week="2" data-in-unit="2" title="Semana global 2 · Unidad I · S2/4" aria-pressed="false">S2<span class="nf-week-btn__g">2</span></button>
+              <button type="button" class="nf-week-btn" data-unit="1" data-global-week="3" data-in-unit="3" title="Semana global 3 · Unidad I · S3/4" aria-pressed="false">S3<span class="nf-week-btn__g">3</span></button>
+              <button type="button" class="nf-week-btn" data-unit="1" data-global-week="4" data-in-unit="4" title="Semana global 4 · Unidad I · S4/4" aria-pressed="false">S4<span class="nf-week-btn__g">4</span></button>
             </div>
           </div>
-          <p class="hero__desc">
-            Mi nombre es Howard Achcaray Cortez. Este espacio ha sido desarrollado con fines académicos para registrar,
-            organizar y presentar de manera clara las actividades semanales del curso <strong>Base de Datos II</strong>
-            de la Universidad Peruana Los Andes, facilitando el seguimiento del avance del semestre y la consulta de
-            los contenidos abordados en cada semana.
-          </p>
+          <div class="nf-units-strip__row">
+            <div class="nf-units-strip__unitlabel">
+              <a class="nf-units-strip__unitlink" href="#unidad-2">Unidad II</a>
+              <span class="nf-units-strip__subtitle">Diseño y normalización</span>
+            </div>
+            <div class="nf-units-strip__weeks" role="group" aria-label="Semanas de la unidad II">
+              <button type="button" class="nf-week-btn" data-unit="2" data-global-week="5" data-in-unit="1" title="Semana global 5 · Unidad II · S1/4" aria-pressed="false">S1<span class="nf-week-btn__g">5</span></button>
+              <button type="button" class="nf-week-btn" data-unit="2" data-global-week="6" data-in-unit="2" title="Semana global 6 · Unidad II · S2/4" aria-pressed="false">S2<span class="nf-week-btn__g">6</span></button>
+              <button type="button" class="nf-week-btn" data-unit="2" data-global-week="7" data-in-unit="3" title="Semana global 7 · Unidad II · S3/4" aria-pressed="false">S3<span class="nf-week-btn__g">7</span></button>
+              <button type="button" class="nf-week-btn" data-unit="2" data-global-week="8" data-in-unit="4" title="Semana global 8 · Unidad II · S4/4" aria-pressed="false">S4<span class="nf-week-btn__g">8</span></button>
+            </div>
+          </div>
+          <div class="nf-units-strip__row">
+            <div class="nf-units-strip__unitlabel">
+              <a class="nf-units-strip__unitlink" href="#unidad-3">Unidad III</a>
+              <span class="nf-units-strip__subtitle">SQL avanzado</span>
+            </div>
+            <div class="nf-units-strip__weeks" role="group" aria-label="Semanas de la unidad III">
+              <button type="button" class="nf-week-btn" data-unit="3" data-global-week="9" data-in-unit="1" title="Semana global 9 · Unidad III · S1/4" aria-pressed="false">S1<span class="nf-week-btn__g">9</span></button>
+              <button type="button" class="nf-week-btn" data-unit="3" data-global-week="10" data-in-unit="2" title="Semana global 10 · Unidad III · S2/4" aria-pressed="false">S2<span class="nf-week-btn__g">10</span></button>
+              <button type="button" class="nf-week-btn" data-unit="3" data-global-week="11" data-in-unit="3" title="Semana global 11 · Unidad III · S3/4" aria-pressed="false">S3<span class="nf-week-btn__g">11</span></button>
+              <button type="button" class="nf-week-btn" data-unit="3" data-global-week="12" data-in-unit="4" title="Semana global 12 · Unidad III · S4/4" aria-pressed="false">S4<span class="nf-week-btn__g">12</span></button>
+            </div>
+          </div>
+          <div class="nf-units-strip__row">
+            <div class="nf-units-strip__unitlabel">
+              <a class="nf-units-strip__unitlink" href="#unidad-4">Unidad IV</a>
+              <span class="nf-units-strip__subtitle">NoSQL</span>
+            </div>
+            <div class="nf-units-strip__weeks" role="group" aria-label="Semanas de la unidad IV">
+              <button type="button" class="nf-week-btn" data-unit="4" data-global-week="13" data-in-unit="1" title="Semana global 13 · Unidad IV · S1/4" aria-pressed="false">S1<span class="nf-week-btn__g">13</span></button>
+              <button type="button" class="nf-week-btn" data-unit="4" data-global-week="14" data-in-unit="2" title="Semana global 14 · Unidad IV · S2/4" aria-pressed="false">S2<span class="nf-week-btn__g">14</span></button>
+              <button type="button" class="nf-week-btn" data-unit="4" data-global-week="15" data-in-unit="3" title="Semana global 15 · Unidad IV · S3/4" aria-pressed="false">S3<span class="nf-week-btn__g">15</span></button>
+              <button type="button" class="nf-week-btn" data-unit="4" data-global-week="16" data-in-unit="4" title="Semana global 16 · Unidad IV · S4/4" aria-pressed="false">S4<span class="nf-week-btn__g">16</span></button>
+            </div>
+          </div>
         </div>
+        <p class="nf-units-strip__reset">
+          <button type="button" class="nf-week-btn nf-week-btn--quiet" id="weekBtnsReset">Quitar filtro de semana (ver todo el catálogo)</button>
+        </p>
       </section>
 
-      <section class="card">
-        <div class="card__header">
-          <hII class="card__title">Actividades del semestre</hII>
-          <div class="filters">
-            <label class="field field--inline">
-              <span class="field__label">Filtrar por semana</span>
-              <select id="weekFilter">
-                <option value="all">Todas</option>
-              </select>
-            </label>
-            <div class="search">
-              <input id="search" type="search" placeholder="Buscar por título o descripción..." />
-            </div>
-          </div>
+      <div class="nf-toolbar">
+        <label class="field field--inline nf-field">
+          <span class="field__label">Unidad</span>
+          <select id="unitFilter" class="nf-select" title="Filtrar por unidad académica">
+            <option value="all">Todas las unidades</option>
+            <option value="1">Unidad I</option>
+            <option value="2">Unidad II</option>
+            <option value="3">Unidad III</option>
+            <option value="4">Unidad IV</option>
+          </select>
+        </label>
+        <label class="field field--inline nf-field">
+          <span class="field__label">Semana (1–16)</span>
+          <select id="weekFilter" class="nf-select">
+            <option value="all">Todas</option>
+          </select>
+        </label>
+        <div class="search nf-search">
+          <input id="search" type="search" placeholder="Títulos, descripciones…" />
         </div>
+      </div>
+      <p id="stats" class="nf-stats" aria-live="polite"></p>
+      <div id="list" class="nf-rows" aria-live="polite"></div>
 
-        <div id="stats" class="stats" aria-live="polite"></div>
-        <div id="list" class="list" aria-live="polite"></div>
+      <section id="ayuda" class="nf-help" aria-labelledby="ayudaTitulo">
+        <h3 id="ayudaTitulo" class="nf-help__title">Cómo usar este portafolio</h3>
+        <ol class="nf-help__list">
+          <li>
+            <strong>Ver:</strong> usa los <strong>botones S1–S4</strong> de cada unidad (filtran por semana global 1–16), los
+            desplegables superior o la búsqueda por palabra.
+          </li>
+          <li><strong>Agregar o editar:</strong> usa «Agregar actividad» (se abre otra pestaña con inicio de sesión).</li>
+          <li><strong>PDFs:</strong> solo se ven en el mismo equipo y navegador donde los subiste (almacenamiento local).</li>
+        </ol>
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="container footer__inner">
-        <span>Base de Datos II · Howard Achcaray Cortez</span>
-        <span class="footer__muted">UPLA</span>
+    <footer class="footer nf-footer">
+      <div class="nf-footer__grid">
+        <div class="nf-footer__col">
+          <div class="nf-footer__brand">UPLA</div>
+          <p class="nf-footer__text">
+            Universidad Peruana Los Andes<br />
+            Ingeniería de Sistemas y Computación
+          </p>
+          <p class="nf-footer__muted">Portafolio personal · Base de Datos II · 2026 · Howard Achcaray Cortez</p>
+        </div>
+        <div class="nf-footer__col">
+          <div class="nf-footer__label">Enlaces útiles</div>
+          <ul class="nf-footer__links">
+            <li><a href="./add.html">Registrar o editar una actividad</a></li>
+            <li>
+              <a href="https://aledaniel06.github.io/portafolio-bd2/" target="_blank" rel="noopener noreferrer"
+                >Otro portafolio del curso (referencia)</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="nf-footer__bar">
+        <span>Material académico · sin fines comerciales</span>
       </div>
     </footer>
 
@@ -97,6 +206,7 @@
     </dialog>
 
     <script src="./pdfStore.js"></script>
+    <script src="./curriculum.js"></script>
     <script src="./main.js"></script>
   </body>
 </html>

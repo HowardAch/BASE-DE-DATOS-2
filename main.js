@@ -23,7 +23,15 @@ function saveActivities(items) {
 }
 
 function compareActivities(a, b) {
-  if (a.week !== b.week) return a.week - b.week;
+  const aw =
+    typeof Bd2Course !== "undefined"
+      ? Bd2Course.clampWeek(a.week)
+      : Number(a.week) || 0;
+  const bw =
+    typeof Bd2Course !== "undefined"
+      ? Bd2Course.clampWeek(b.week)
+      : Number(b.week) || 0;
+  if (aw !== bw) return aw - bw;
   if (a.date !== b.date) return String(a.date).localeCompare(String(b.date));
   return String(a.createdAt || "").localeCompare(String(b.createdAt || ""));
 }
@@ -31,6 +39,39 @@ function compareActivities(a, b) {
 function uniqueWeeks(items) {
   const set = new Set(items.map((x) => x.week).filter((w) => Number.isFinite(w)));
   return Array.from(set).sort((a, b) => a - b);
+}
+
+/** Semanas para el selector: si hay unidad, siempre las 4 globales; si «todas», solo las que tienen datos. */
+function weeksForToolbar(items, unitFilter) {
+  if (unitFilter !== "all") {
+    const u = Number(unitFilter);
+    if (Number.isFinite(u) && u >= 1 && u <= 4) {
+      const lo = (u - 1) * 4 + 1;
+      return [lo, lo + 1, lo + 2, lo + 3];
+    }
+  }
+  return uniqueWeeks(items);
+}
+
+function updateHeroSummary(items) {
+  const el = document.getElementById("heroSummary");
+  if (!el) return;
+  if (typeof Bd2Course === "undefined") {
+    el.innerHTML =
+      '<li class="nf-chip">Carga curriculum.js para ver el resumen por unidades.</li>';
+    return;
+  }
+  const weeksCount = uniqueWeeks(items).length;
+  const n = items.length;
+  const actWord = n === 1 ? "actividad registrada" : "actividades registradas";
+  const unitsTouched = new Set(items.map((x) => Bd2Course.splitWeek(x.week).unit));
+  const uCount = unitsTouched.size;
+  el.innerHTML = `
+    <li class="nf-chip"><span class="nf-chip__label">${n}</span> ${actWord}</li>
+    <li class="nf-chip"><span class="nf-chip__label">${weeksCount}</span> semana(s) con contenido</li>
+    <li class="nf-chip"><span class="nf-chip__label">${uCount}/4</span> unidades con actividades</li>
+    <li class="nf-chip">Datos guardados solo en <span class="nf-chip__label">este navegador</span></li>
+  `;
 }
 
 function escapeHtml(s) {
@@ -81,80 +122,216 @@ function render() {
   const items = loadActivities().slice().sort(compareActivities);
 
   const weekFilter = $("weekFilter").value;
+  const unitFilter = $("unitFilter").value;
   const query = $("search").value.trim().toLowerCase();
 
-  const filtered = items.filter((x) => {
-    const matchWeek = weekFilter === "all" ? true : String(x.week) === String(weekFilter);
-    const hay = `${x.title || ""}\n${x.description || ""}`.toLowerCase();
-    const matchQuery = query ? hay.includes(query) : true;
-    return matchWeek && matchQuery;
-  });
-
-  const weeks = uniqueWeeks(items);
-  const select = $("weekFilter");
-  const current = select.value;
-  const options = [
-    `<option value="all">Todas</option>`,
-    ...weeks.map((w) => `<option value="${w}">Semana ${w}</option>`),
-  ].join("");
-  if (select.innerHTML !== options) {
-    select.innerHTML = options;
-    if ([...select.options].some((o) => o.value === current)) select.value = current;
-  }
-
-  $("stats").textContent = `${filtered.length} actividad(es) mostrada(s) · ${items.length} total`;
-
-  const list = $("list");
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="item"><p class="item__desc">No hay actividades para mostrar.</p></div>`;
+  if (typeof Bd2Course === "undefined") {
+    $("list").innerHTML =
+      '<div class="nf-empty"><p class="nf-empty__text">Falta cargar curriculum.js antes de main.js.</p></div>';
     return;
   }
 
-  list.innerHTML = filtered
-    .map((x) => {
-      const linkPart = x.link
-        ? `<div class="item__link"><a href="${escapeHtml(x.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(
-            x.link
-          )}</a></div>`
-        : "";
+  const filtered = items.filter((x) => {
+    const sp = Bd2Course.splitWeek(x.week);
+    const matchUnit = unitFilter === "all" ? true : sp.unit === Number(unitFilter);
+    const matchWeek = weekFilter === "all" ? true : String(x.week) === String(weekFilter);
+    const hay = `${x.title || ""}\n${x.description || ""}`.toLowerCase();
+    const matchQuery = query ? hay.includes(query) : true;
+    return matchUnit && matchWeek && matchQuery;
+  });
 
-      const descPart = x.description ? `<p class="item__desc">${escapeHtml(x.description)}</p>` : "";
-      const pdfPart =
-        x.pdfKey
-          ? `<div class="item__pdf"><button class="btn btn--ghost mini" type="button" data-action="open-pdf" data-pdf="${escapeHtml(
-              x.pdfKey
-            )}" data-pdf-name="${escapeHtml(x.pdfName || "archivo.pdf")}">Abrir PDF</button></div>`
-          : "";
+  const weekChoices = weeksForToolbar(items, unitFilter);
+  const select = $("weekFilter");
+  const current = select.value;
+  const options = [
+    `<option value="all">Todas en el filtro</option>`,
+    ...weekChoices.map(
+      (w) => `<option value="${w}">Semana global ${w} (de 16)</option>`,
+    ),
+  ].join("");
+  if (select.innerHTML !== options) {
+    select.innerHTML = options;
+  }
+  if ([...select.options].some((o) => o.value === current)) select.value = current;
+  else select.value = "all";
 
-      return `
-        <article class="item" data-id="${escapeHtml(x.id)}">
-          <div class="item__top">
-            <div>
-              <h3 class="item__title">${escapeHtml(x.title)}</h3>
-              <div class="item__meta">
-                <span class="pill">Semana ${escapeHtml(x.week)}</span>
-                <span class="pill">${escapeHtml(x.date)}</span>
-              </div>
-            </div>
-            <div class="item__actions">
-              <button class="btn btn--ghost mini" type="button" data-action="edit">Editar</button>
+  updateHeroSummary(items);
+
+  const weeksCount = uniqueWeeks(items).length;
+  const statsEl = $("stats");
+  const unitLabel =
+    unitFilter === "all"
+      ? "Todas las unidades"
+      : Bd2Course.getUnitMeta(Number(unitFilter)).label;
+  if (unitFilter === "all" && weekFilter === "all" && query === "") {
+    statsEl.textContent = `Mostrando todo el catálogo (${filtered.length}) · ${weeksCount} semana(s) con material · 4 unidades × 4 semanas`;
+  } else if (items.length === 0) {
+    statsEl.textContent = "Aún no hay actividades guardadas en este navegador.";
+  } else {
+    const weekLbl = weekFilter === "all" ? "semanas según filtro" : `semana global ${weekFilter}`;
+    statsEl.textContent = `${filtered.length} de ${items.length} actividades · ${unitLabel} · ${weekLbl}`;
+  }
+
+  const list = $("list");
+  if (filtered.length === 0) {
+    const hasAny = items.length > 0;
+    list.innerHTML = hasAny
+      ? `<div class="nf-empty">
+          <p class="nf-empty__title">Nada coincide con tu búsqueda o filtro</p>
+          <p class="nf-empty__text">Prueba «Todas las unidades», «Todas» en semana, o revisa el texto de búsqueda.</p>
+        </div>`
+      : `<div class="nf-empty">
+          <p class="nf-empty__title">Empieza tu portafolio</p>
+          <p class="nf-empty__text">
+            Aún no hay actividades. Registra la primera eligiendo unidad y semana (del 1 al 16) en el panel seguro.
+          </p>
+          <button class="btn nf-btn-primary nf-empty__btn" type="button" data-action="go-add">Crear primera actividad</button>
+        </div>`;
+    return;
+  }
+
+  function activityTile(x) {
+    const sp = Bd2Course.splitWeek(x.week);
+    const um = Bd2Course.getUnitMeta(sp.unit);
+    const linkPart = x.link
+      ? `<a class="nf-tile__btn" href="${escapeHtml(x.link)}" target="_blank" rel="noopener noreferrer">Enlace</a>`
+      : "";
+    const descPart = x.description
+      ? `<p class="nf-tile__desc">${escapeHtml(x.description)}</p>`
+      : "";
+    const pdfPart = x.pdfKey
+      ? `<button class="nf-tile__btn" type="button" data-action="open-pdf" data-pdf="${escapeHtml(
+          x.pdfKey
+        )}" data-pdf-name="${escapeHtml(x.pdfName || "archivo.pdf")}">PDF</button>`
+      : "";
+
+    return `
+      <article class="nf-tile" data-id="${escapeHtml(x.id)}">
+        <div class="nf-tile__wrap">
+          <div class="nf-tile__poster" data-week-mod="${Number(x.week) % 6}">
+            <span class="nf-tile__week">Uni. ${escapeHtml(um.roman)} · Sem. ${escapeHtml(String(sp.weekAbs))}/16</span>
+            <h3 class="nf-tile__title">${escapeHtml(x.title)}</h3>
+            <p class="nf-tile__date">Sem. ${escapeHtml(String(sp.weekInUnit))} en unidad · ${escapeHtml(x.date)}</p>
+          </div>
+          <div class="nf-tile__hover">
+            <p class="nf-tile__unitline">${escapeHtml(um.label)} — ${escapeHtml(um.title)}</p>
+            ${descPart}
+            <div class="nf-tile__actions">
+              <button class="nf-tile__btn nf-tile__btn--solid" type="button" data-action="edit">Editar</button>
+              ${pdfPart}
+              ${linkPart}
             </div>
           </div>
-          ${descPart}
-          ${linkPart}
-          ${pdfPart}
-        </article>
-      `;
-    })
-    .join("");
+        </div>
+      </article>
+    `;
+  }
+
+  /** Agrupa primero por unidad I–IV, dentro por semana global. */
+  const parts = [];
+  for (let u = 1; u <= 4; u++) {
+    const unitItems = filtered.filter((x) => Bd2Course.splitWeek(x.week).unit === u);
+    if (unitItems.length === 0) continue;
+
+    const meta = Bd2Course.getUnitMeta(u);
+    const byWeek = new Map();
+    for (const x of unitItems) {
+      const w = Number.isFinite(x.week) ? Bd2Course.clampWeek(x.week) : 1;
+      if (!byWeek.has(w)) byWeek.set(w, []);
+      byWeek.get(w).push(x);
+    }
+    const weekOrder = Array.from(byWeek.keys()).sort((a, b) => a - b);
+
+    const weekSections = weekOrder
+      .map((w) => {
+        const rowItems = byWeek.get(w) || [];
+        const sw = Bd2Course.splitWeek(w);
+        return `
+        <section class="nf-row nf-row--nested">
+          <h3 class="nf-row__title nf-row__title--nested">
+            Semana ${escapeHtml(String(w))} del semestre
+            <span class="nf-row__meta">(${escapeHtml(String(sw.weekInUnit))}/4 en ${escapeHtml(meta.label)})</span>
+          </h3>
+          <div class="nf-row__track">${rowItems.map(activityTile).join("")}</div>
+        </section>`;
+      })
+      .join("");
+
+    parts.push(`
+      <section class="nf-unit-block" id="unidad-${u}" aria-labelledby="unit-h-${u}">
+        <header class="nf-unit-block__head">
+          <h2 id="unit-h-${u}" class="nf-unit-block__title">${escapeHtml(meta.label)} · ${escapeHtml(meta.title)}</h2>
+          <p class="nf-unit-block__range">Semanas globales ${(u - 1) * 4 + 1}–${u * 4}</p>
+        </header>
+        <div class="nf-unit-block__body">
+          ${weekSections}
+        </div>
+      </section>`);
+  }
+
+  list.innerHTML = parts.join("");
+
+  syncWeekStripHighlight();
+}
+
+function syncWeekStripHighlight() {
+  const uf = $("unitFilter").value;
+  const wf = $("weekFilter").value;
+  document.querySelectorAll(".nf-week-btn[data-global-week]").forEach((b) => {
+    const u = b.getAttribute("data-unit");
+    const wg = b.getAttribute("data-global-week");
+    const unitOk = uf === "all" ? true : u === uf;
+    const match = wf !== "all" && wg === wf && unitOk;
+    b.classList.toggle("nf-week-btn--active", match);
+    b.setAttribute("aria-pressed", match ? "true" : "false");
+  });
+}
+
+function wireWeekStrip() {
+  const strip = document.querySelector(".nf-units-strip");
+  if (!strip) return;
+  strip.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLElement)) return;
+
+    if (t.closest("#weekBtnsReset")) {
+      $("unitFilter").value = "all";
+      $("weekFilter").value = "all";
+      $("search").value = "";
+      render();
+      document.getElementById("browse")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    const btn = t.closest(".nf-week-btn[data-global-week]");
+    if (!btn) return;
+
+    const unit = btn.getAttribute("data-unit");
+    const wg = btn.getAttribute("data-global-week");
+    if (!unit || !wg) return;
+
+    $("unitFilter").value = unit;
+    $("weekFilter").value = wg;
+    $("search").value = "";
+    render();
+
+    requestAnimationFrame(() => {
+      const anchor = document.getElementById(`unidad-${unit}`);
+      anchor?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+}
+
+function openAddPanel() {
+  window.open("./add.html", "_blank", "noopener");
 }
 
 function wireEvents() {
-  $("btnAdd").addEventListener("click", () => {
-    window.open("./add.html", "_blank", "noopener");
-  });
+  $("btnAdd").addEventListener("click", openAddPanel);
+  document.getElementById("btnAddHero")?.addEventListener("click", openAddPanel);
 
   $("weekFilter").addEventListener("change", render);
+  $("unitFilter").addEventListener("change", render);
   $("search").addEventListener("input", render);
 
   $("list").addEventListener("click", (e) => {
@@ -167,6 +344,11 @@ function wireEvents() {
 
     if (action === "edit") {
       window.open(`./add.html?edit=${encodeURIComponent(id)}`, "_blank", "noopener");
+    }
+
+    if (action === "go-add") {
+      openAddPanel();
+      return;
     }
 
     if (action === "open-pdf") {
@@ -184,8 +366,18 @@ function wireEvents() {
   });
 }
 
+function wireNavScroll() {
+  const bar = document.querySelector(".nf-topbar");
+  if (!bar) return;
+  const onScroll = () => bar.classList.toggle("is-solid", window.scrollY > 40);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+}
+
 function main() {
+  wireNavScroll();
   wireEvents();
+  wireWeekStrip();
   render();
 
   // Limpieza del objectURL al cerrar el dialog
