@@ -37,6 +37,53 @@
   /** Semestre oficial (16 semanas). */
   const TOTAL_WEEKS = 16;
 
+  /**
+   * Material en Google Drive por semana global (Unidad I · semanas 1–4 del semestre).
+   * Se muestra en el catálogo junto a tus actividades guardadas.
+   */
+  const WEEK_DRIVE_LINKS = {
+    1: [
+      "https://drive.google.com/file/d/1lutaw09_mVreH11_-QvD13IfmYziq7xB/view?usp=drive_link",
+      "https://drive.google.com/file/d/1WI2nnRtjNdqlzMJvzYiIcbvVHpz3f_c3/view?usp=drive_link",
+    ],
+    2: [
+      "https://drive.google.com/file/d/1SQgLI86JpPRMt5-bxn_MW_30khQkvHiN/view?usp=drive_link",
+      "https://drive.google.com/file/d/1oYLO0MmWm5lQ7O2-xicRtfafDkSyWy1J/view?usp=drive_link",
+      "https://drive.google.com/file/d/1ndPBK_bySnSokFtEDaYpQtEOWc2M7d-l/view?usp=drive_link",
+    ],
+    3: [
+      "https://drive.google.com/file/d/1s1b1V9RGIxNPcibxdTq5sjX-6pIg-Ils/view?usp=drive_link",
+      "https://drive.google.com/file/d/1xGL9keAH2SxfG0Tq1Vi7Zok_Mxhm1jRO/view?usp=drive_link",
+    ],
+    4: [
+      "https://drive.google.com/file/d/1D9MgDrAJvXd5Sb9g4enURIOLyjzieFSn/view?usp=drive_link",
+    ],
+  };
+
+  function getPresetDriveActivities() {
+    const out = [];
+    for (const weekStr of Object.keys(WEEK_DRIVE_LINKS)) {
+      const week = clampWeek(Number(weekStr));
+      const urls = WEEK_DRIVE_LINKS[weekStr];
+      if (!Array.isArray(urls)) continue;
+      urls.forEach((url, idx) => {
+        out.push({
+          id: `drive-w${week}-${idx}`,
+          week,
+          date: "2026-01-01",
+          title: `Google Drive · semana ${week} (${idx + 1}/${urls.length})`,
+          description: "Documento compartido en Google Drive (Unidad I).",
+          link: url,
+          pdfKey: "",
+          pdfName: "",
+          createdAt: `drive-${week}-${String(idx).padStart(2, "0")}`,
+          preset: true,
+        });
+      });
+    }
+    return out;
+  }
+
   function clampWeek(n) {
     const w = Number(n);
     if (!Number.isFinite(w)) return 1;
@@ -65,6 +112,8 @@
   win.Bd2Course = {
     UNITS,
     TOTAL_WEEKS,
+    WEEK_DRIVE_LINKS,
+    getPresetDriveActivities,
     clampWeek,
     splitWeek,
     absWeek,

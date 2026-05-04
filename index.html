@@ -1,21 +1,21 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Base de Datos II · Actividades semanales (UPLA)</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body class="nf">
-    <a class="skip-link" href="#browse">Saltar al contenido principal</a>
-    <header class="topbar nf-topbar">
-      <div class="nf-topbar__inner">
-        <a class="nf-logo" href="./index.html" aria-label="Inicio">UPLA</a>
-        <nav class="nf-nav" aria-label="Principal">
-          <a class="nf-nav__link nf-nav__link--active" href="./index.html">Inicio</a>
-          <a class="nf-nav__link" href="#browse">Actividades</a>
-          <a class="nf-nav__link" href="#ayuda">Cómo usar</a>
-        </nav>
+  <!doctype html>
+  <html lang="es">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Base de Datos II · Actividades semanales (UPLA)</title>
+      <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body class="nf">
+      <a class="skip-link" href="#browse">Saltar al contenido principal</a>
+      <header class="topbar nf-topbar">
+        <div class="nf-topbar__inner">
+          <a class="nf-logo" href="./index.html" aria-label="Inicio">UPLA</a>
+          <nav class="nf-nav" aria-label="Principal">
+            <a class="nf-nav__link nf-nav__link--active" href="./index.html">Inicio</a>
+            <a class="nf-nav__link" href="#browse">Actividades</a>
+            <a class="nf-nav__link" href="#ayuda">Cómo usar</a>
+          </nav>
         <div class="topbar__actions nf-topbar__actions">
           <button id="btnAdd" class="btn nf-btn-primary" type="button" title="Abrir en otra pestaña">
             Agregar actividad
@@ -33,9 +33,9 @@
         <p class="nf-hero__eyebrow">Base de Datos II </p>
         <h1 class="nf-hero__title">ACHCARAY CORTEZ HOWARD </h1>
         <p class="nf-hero__synopsis">
-          Registra y consulta las actividades semanales del curso
-          <strong>Base de Datos II</strong> (Universidad Peruana Los Andes). Todo se guarda en
-          <strong>este navegador</strong>: ideal para organizar tu avance y presentar tu trabajo.
+          Soy un individuo con orientación al logro, caracterizado por un enfoque analítico y sistemático en la resolución de problemas. Poseo habilidades en la gestión eficiente de recursos, toma de decisiones basada en evidencia y adaptación a entornos dinámicos. Cuento con competencias en pensamiento crítico, planificación estratégica y trabajo colaborativo, lo que me permite integrarme eficazmente en equipos multidisciplinarios.
+
+Asimismo, mantengo una actitud proactiva hacia el aprendizaje continuo, optimizando procesos mediante la identificación de oportunidades de mejora. Presento habilidades comunicativas a nivel técnico y operativo, facilitando la transmisión clara de información en distintos contextos. Mi desempeño se fundamenta en la responsabilidad, la ética profesional y la orientación a resultados medibles.
         </p>
         <div class="nf-hero__actions">
           <a class="btn nf-btn-primary nf-hero__cta" href="#browse">Ver actividades</a>
@@ -146,8 +146,16 @@
             <strong>Ver:</strong> usa los <strong>botones S1–S4</strong> de cada unidad (filtran por semana global 1–16), los
             desplegables superior o la búsqueda por palabra.
           </li>
-          <li><strong>Agregar o editar:</strong> usa «Agregar actividad» (se abre otra pestaña con inicio de sesión).</li>
-          <li><strong>PDFs:</strong> solo se ven en el mismo equipo y navegador donde los subiste (almacenamiento local).</li>
+          <li>
+            <strong>Agregar o editar:</strong> usa «Agregar actividad» (otra pestaña con inicio de sesión). Al guardar, el
+            listado se organiza automáticamente por semana y se mantiene un respaldo local por semana.
+          </li>
+          <li>
+            <strong>GitHub (opcional):</strong> en el formulario de registro puedes activar la sincronización para subir un
+            JSON con tus actividades y el agrupado por semanas. Los PDF adjuntos en el navegador no se suben al repositorio
+            (solo metadatos y enlaces); sube los PDF al repo aparte o usa enlaces públicos.
+          </li>
+          <li><strong>PDFs locales:</strong> la previsualización en este equipo usa almacenamiento del navegador (IndexedDB).</li>
         </ol>
       </section>
     </main>
@@ -207,6 +215,8 @@
 
     <script src="./pdfStore.js"></script>
     <script src="./curriculum.js"></script>
+    <script src="./weekSnapshot.js"></script>
+    <script src="./githubSync.js"></script>
     <script src="./main.js"></script>
   </body>
 </html>

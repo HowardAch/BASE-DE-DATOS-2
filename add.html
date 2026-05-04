@@ -49,7 +49,10 @@
       <section id="activityCard" class="card" hidden>
         <div class="card__header">
           <h2 class="card__title">Publicar una actividad</h2>
-          <p class="card__hint">Se guardará en este navegador y se verá en la página principal.</p>
+          <p class="card__hint">
+            Se guardará en este navegador y se verá en la página principal. Mientras escribes, se guarda un borrador
+            automático en este mismo equipo.
+          </p>
         </div>
 
         <form id="activityForm" class="form">
@@ -122,6 +125,56 @@
           </div>
         </form>
       </section>
+
+      <section id="githubCard" class="card" hidden>
+        <div class="card__header">
+          <h2 class="card__title">Sincronización con GitHub (opcional)</h2>
+          <p class="card__hint">
+            Al guardar una actividad, se puede actualizar un archivo JSON en tu repositorio con todas las actividades y el
+            agrupado por semanas. Necesitas un
+            <a class="nf-inline-link" href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer"
+              >Personal Access Token</a
+            >
+            con permiso <strong>repo</strong> (repositorio privado) o al menos acceso al repo público. El token se guarda
+            <strong>solo en este navegador</strong>; no lo uses en equipos compartidos.
+          </p>
+        </div>
+        <form id="githubForm" class="form">
+          <div class="grid">
+            <div class="field grid__span2">
+              <span class="field__label">Activar sincronización al guardar</span>
+              <div class="nf-checkbox-row">
+                <input id="ghEnabled" type="checkbox" />
+                <span class="hint">Sube o actualiza el JSON en el repositorio indicado cada vez que guardes una actividad.</span>
+              </div>
+            </div>
+            <label class="field grid__span2">
+              <span class="field__label">Token (PAT)</span>
+              <input id="ghToken" type="password" autocomplete="off" placeholder="ghp_… o fine-grained token" />
+            </label>
+            <label class="field">
+              <span class="field__label">Usuario u organización</span>
+              <input id="ghOwner" type="text" autocomplete="off" placeholder="tu-usuario" />
+            </label>
+            <label class="field">
+              <span class="field__label">Repositorio</span>
+              <input id="ghRepo" type="text" autocomplete="off" placeholder="nombre-repo" />
+            </label>
+            <label class="field">
+              <span class="field__label">Rama</span>
+              <input id="ghBranch" type="text" autocomplete="off" value="main" />
+            </label>
+            <label class="field">
+              <span class="field__label">Ruta del archivo</span>
+              <input id="ghPath" type="text" autocomplete="off" placeholder="data/bd2-portfolio.json" />
+            </label>
+          </div>
+          <div class="form__actions">
+            <button class="btn nf-btn-primary" type="submit">Guardar configuración</button>
+            <button id="ghTest" class="btn btn--ghost" type="button">Probar ahora (subir JSON actual)</button>
+          </div>
+        </form>
+      </section>
     </main>
 
     <dialog id="dialog" class="dialog">
@@ -136,6 +189,8 @@
 
     <script src="./pdfStore.js"></script>
     <script src="./curriculum.js"></script>
+    <script src="./weekSnapshot.js"></script>
+    <script src="./githubSync.js"></script>
     <script src="./add.js"></script>
   </body>
 </html>

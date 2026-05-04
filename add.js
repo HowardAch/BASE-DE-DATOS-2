@@ -2,6 +2,9 @@
 
 const STORAGE_KEY = "bd2_upla_actividades_v1";
 const SESSION_KEY = "bd2_upla_logged_in_v1";
+const DRAFT_KEY = "bd2_add_form_draft_v1";
+
+let draftTimer = null;
 
 const AUTH_USER = "howard";
 const AUTH_PASS = "hachapapi123";
@@ -161,10 +164,97 @@ function getFormData() {
   };
 }
 
+function loadGithubForm() {
+  if (typeof window.Bd2GitHubSync === "undefined") return;
+  const s = window.Bd2GitHubSync.loadSettings();
+  const ge = document.getElementById("ghEnabled");
+  const gt = document.getElementById("ghToken");
+  if (!ge || !gt) return;
+  ge.checked = Boolean(s.enabled);
+  gt.value = s.token || "";
+  document.getElementById("ghOwner").value = s.owner || "";
+  document.getElementById("ghRepo").value = s.repo || "";
+  document.getElementById("ghBranch").value = s.branch || "main";
+  document.getElementById("ghPath").value = s.path || "data/bd2-portfolio.json";
+}
+
+function readGithubFormToStorage() {
+  if (typeof window.Bd2GitHubSync === "undefined") return;
+  window.Bd2GitHubSync.saveSettings({
+    enabled: document.getElementById("ghEnabled")?.checked === true,
+    token: document.getElementById("ghToken")?.value.trim() || "",
+    owner: document.getElementById("ghOwner")?.value.trim() || "",
+    repo: document.getElementById("ghRepo")?.value.trim() || "",
+    branch: document.getElementById("ghBranch")?.value.trim() || "main",
+    path: document.getElementById("ghPath")?.value.trim() || "data/bd2-portfolio.json",
+  });
+}
+
 function showLoggedState() {
   const logged = isLoggedIn();
   $("loginCard").hidden = logged;
   $("activityCard").hidden = !logged;
+  const ghCard = document.getElementById("githubCard");
+  if (ghCard) ghCard.hidden = !logged;
+  if (logged) loadGithubForm();
+}
+
+function scheduleDraftSave() {
+  if (!isLoggedIn()) return;
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraftNow, 650);
+}
+
+function saveDraftNow() {
+  try {
+    if (!isLoggedIn()) return;
+    syncAbsWeekFromUnitFields();
+    const payload = {
+      ...getFormData(),
+      unit: $("unit").value,
+      weekInUnit: $("weekInUnit").value,
+      pdfKey: String($("activityForm").dataset.pdfKey || ""),
+      pdfName: String($("activityForm").dataset.pdfName || ""),
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function applyDraftIfAny() {
+  const editId = getEditId();
+  if (editId) return;
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (!raw) return;
+  const parsed = safeParseJSON(raw);
+  if (!parsed.ok || typeof parsed.value !== "object") return;
+  const d = parsed.value;
+  let abs = 1;
+  if (typeof Bd2Course !== "undefined") {
+    if (d.week !== undefined && d.week !== null && String(d.week).trim() !== "") {
+      abs = Bd2Course.clampWeek(d.week);
+    } else if (d.unit != null && d.weekInUnit != null) {
+      abs = Bd2Course.absWeek(Number(d.unit), Number(d.weekInUnit));
+    }
+  }
+  setFormData({
+    week: abs,
+    date: d.date || todayISO(),
+    title: d.title ?? "",
+    description: d.description ?? "",
+    link: d.link ?? "",
+    pdfKey: d.pdfKey ?? "",
+    pdfName: d.pdfName ?? "",
+  });
 }
 
 function loadForEditIfNeeded() {
@@ -221,6 +311,7 @@ function wireEvents() {
 
   $("btnReset").addEventListener("click", () => {
     $("activityForm").dataset.editingId = "";
+    clearDraft();
     setFormData({ week: 1, date: todayISO(), title: "", description: "", link: "", pdfKey: "", pdfName: "" });
   });
 
@@ -262,6 +353,45 @@ function wireEvents() {
     }
   });
 
+  const draftFields = ["unit", "weekInUnit", "date", "title", "description", "link"];
+  for (const id of draftFields) {
+    $(id).addEventListener("input", scheduleDraftSave);
+    $(id).addEventListener("change", scheduleDraftSave);
+  }
+
+  document.getElementById("githubForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    try {
+      if (typeof window.Bd2GitHubSync === "undefined") throw new Error("githubSync.js no cargado.");
+      readGithubFormToStorage();
+      showDialog("Configuración", "Opciones de GitHub guardadas en este navegador.");
+    } catch (err) {
+      showDialog("Error", err instanceof Error ? err.message : String(err));
+    }
+  });
+
+  document.getElementById("ghTest")?.addEventListener("click", () => {
+    (async () => {
+      if (!isLoggedIn()) throw new Error("Debes iniciar sesión.");
+      if (typeof window.Bd2GitHubSync === "undefined" || typeof window.Bd2WeekSnapshot === "undefined") {
+        throw new Error("Faltan weekSnapshot.js o githubSync.js.");
+      }
+      readGithubFormToStorage();
+      const all = loadActivities();
+      window.Bd2WeekSnapshot.persistWeekSnapshot(all);
+      const r = await window.Bd2GitHubSync.syncPortfolioJson(
+        window.Bd2WeekSnapshot.buildPortfolioExport(all),
+      );
+      if (r.skipped) {
+        showDialog("Sincronización", "Activa el checkbox y completa token, owner y repositorio.");
+        return;
+      }
+      showDialog("GitHub", "Archivo JSON subido o actualizado correctamente.");
+    })().catch((err) => {
+      showDialog("GitHub", err instanceof Error ? err.message : String(err));
+    });
+  });
+
   $("activityForm").addEventListener("submit", (e) => {
     e.preventDefault();
     try {
@@ -291,7 +421,28 @@ function wireEvents() {
         });
         upsertActivity(item);
 
-        showDialog("Guardado", "Actividad guardada. Ya puedes volver a la página principal.");
+        const all = loadActivities();
+        if (window.Bd2WeekSnapshot) {
+          window.Bd2WeekSnapshot.persistWeekSnapshot(all);
+        }
+
+        let syncNote = "";
+        if (window.Bd2GitHubSync && window.Bd2WeekSnapshot) {
+          try {
+            const r = await window.Bd2GitHubSync.syncPortfolioJson(
+              window.Bd2WeekSnapshot.buildPortfolioExport(all),
+            );
+            if (!r.skipped) syncNote = " Repositorio GitHub actualizado.";
+          } catch (err) {
+            syncNote = ` GitHub: ${err instanceof Error ? err.message : String(err)}`;
+          }
+        }
+
+        clearDraft();
+        showDialog(
+          "Guardado",
+          `Actividad guardada.${syncNote} Redirigiendo a la página principal…`,
+        );
         window.location.href = "./index.html";
       })().catch((err) => {
         showDialog("No se pudo guardar", err instanceof Error ? err.message : String(err));
@@ -311,8 +462,10 @@ function main() {
   if (!isLoggedIn()) setLoggedIn(false);
   showLoggedState();
   wireEvents();
-  if (isLoggedIn()) loadForEditIfNeeded();
-  else syncAbsWeekFromUnitFields();
+  if (isLoggedIn()) {
+    loadForEditIfNeeded();
+    if (!getEditId()) applyDraftIfAny();
+  } else syncAbsWeekFromUnitFields();
 
   window.addEventListener("beforeunload", () => {
     if (activePreviewUrl) URL.revokeObjectURL(activePreviewUrl);

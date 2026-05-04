@@ -61,16 +61,27 @@ function updateHeroSummary(items) {
       '<li class="nf-chip">Carga curriculum.js para ver el resumen por unidades.</li>';
     return;
   }
+  const userItems = items.filter((x) => !x.preset);
+  const presetItems = items.filter((x) => x.preset);
   const weeksCount = uniqueWeeks(items).length;
-  const n = items.length;
+  const n = userItems.length;
   const actWord = n === 1 ? "actividad registrada" : "actividades registradas";
   const unitsTouched = new Set(items.map((x) => Bd2Course.splitWeek(x.week).unit));
   const uCount = unitsTouched.size;
+  const ghOn =
+    typeof window.Bd2GitHubSync !== "undefined" &&
+    window.Bd2GitHubSync.loadSettings().enabled;
+  const driveChip =
+    presetItems.length > 0
+      ? `<li class="nf-chip"><span class="nf-chip__label">${presetItems.length}</span> enlaces Drive (sem. 1–4 · U.I)</li>`
+      : "";
   el.innerHTML = `
     <li class="nf-chip"><span class="nf-chip__label">${n}</span> ${actWord}</li>
+    ${driveChip}
     <li class="nf-chip"><span class="nf-chip__label">${weeksCount}</span> semana(s) con contenido</li>
     <li class="nf-chip"><span class="nf-chip__label">${uCount}/4</span> unidades con actividades</li>
-    <li class="nf-chip">Datos guardados solo en <span class="nf-chip__label">este navegador</span></li>
+    <li class="nf-chip">Respaldo por semana en <span class="nf-chip__label">localStorage</span></li>
+    <li class="nf-chip">GitHub: <span class="nf-chip__label">${ghOn ? "sync activo" : "sin configurar"}</span></li>
   `;
 }
 
@@ -119,7 +130,15 @@ function showPdfPreview(name, file) {
 }
 
 function render() {
-  const items = loadActivities().slice().sort(compareActivities);
+  const rawItems = loadActivities();
+  if (typeof window.Bd2WeekSnapshot !== "undefined") {
+    window.Bd2WeekSnapshot.persistWeekSnapshot(rawItems);
+  }
+  const presetItems =
+    typeof Bd2Course !== "undefined" && typeof Bd2Course.getPresetDriveActivities === "function"
+      ? Bd2Course.getPresetDriveActivities()
+      : [];
+  const items = [...presetItems, ...rawItems].slice().sort(compareActivities);
 
   const weekFilter = $("weekFilter").value;
   const unitFilter = $("unitFilter").value;
@@ -135,7 +154,7 @@ function render() {
     const sp = Bd2Course.splitWeek(x.week);
     const matchUnit = unitFilter === "all" ? true : sp.unit === Number(unitFilter);
     const matchWeek = weekFilter === "all" ? true : String(x.week) === String(weekFilter);
-    const hay = `${x.title || ""}\n${x.description || ""}`.toLowerCase();
+    const hay = `${x.title || ""}\n${x.description || ""}\n${x.link || ""}`.toLowerCase();
     const matchQuery = query ? hay.includes(query) : true;
     return matchUnit && matchWeek && matchQuery;
   });
@@ -158,18 +177,20 @@ function render() {
   updateHeroSummary(items);
 
   const weeksCount = uniqueWeeks(items).length;
+  const userCount = rawItems.length;
+  const presetCount = items.filter((x) => x.preset).length;
   const statsEl = $("stats");
   const unitLabel =
     unitFilter === "all"
       ? "Todas las unidades"
       : Bd2Course.getUnitMeta(Number(unitFilter)).label;
   if (unitFilter === "all" && weekFilter === "all" && query === "") {
-    statsEl.textContent = `Mostrando todo el catálogo (${filtered.length}) · ${weeksCount} semana(s) con material · 4 unidades × 4 semanas`;
+    statsEl.textContent = `Mostrando todo el catálogo (${filtered.length}) · ${userCount} tuyas · ${presetCount} Drive · ${weeksCount} semana(s) con material`;
   } else if (items.length === 0) {
     statsEl.textContent = "Aún no hay actividades guardadas en este navegador.";
   } else {
     const weekLbl = weekFilter === "all" ? "semanas según filtro" : `semana global ${weekFilter}`;
-    statsEl.textContent = `${filtered.length} de ${items.length} actividades · ${unitLabel} · ${weekLbl}`;
+    statsEl.textContent = `${filtered.length} de ${items.length} ítems · ${unitLabel} · ${weekLbl}`;
   }
 
   const list = $("list");
@@ -193,8 +214,12 @@ function render() {
   function activityTile(x) {
     const sp = Bd2Course.splitWeek(x.week);
     const um = Bd2Course.getUnitMeta(sp.unit);
+    const isPreset = Boolean(x.preset);
+    const linkLabel = isPreset ? "Abrir en Drive" : "Enlace";
     const linkPart = x.link
-      ? `<a class="nf-tile__btn" href="${escapeHtml(x.link)}" target="_blank" rel="noopener noreferrer">Enlace</a>`
+      ? `<a class="nf-tile__btn" href="${escapeHtml(x.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(
+          linkLabel,
+        )}</a>`
       : "";
     const descPart = x.description
       ? `<p class="nf-tile__desc">${escapeHtml(x.description)}</p>`
@@ -204,9 +229,12 @@ function render() {
           x.pdfKey
         )}" data-pdf-name="${escapeHtml(x.pdfName || "archivo.pdf")}">PDF</button>`
       : "";
+    const editPart = isPreset
+      ? ""
+      : `<button class="nf-tile__btn nf-tile__btn--solid" type="button" data-action="edit">Editar</button>`;
 
     return `
-      <article class="nf-tile" data-id="${escapeHtml(x.id)}">
+      <article class="nf-tile${isPreset ? " nf-tile--preset" : ""}" data-id="${escapeHtml(x.id)}" data-preset="${isPreset ? "1" : "0"}">
         <div class="nf-tile__wrap">
           <div class="nf-tile__poster" data-week-mod="${Number(x.week) % 6}">
             <span class="nf-tile__week">Uni. ${escapeHtml(um.roman)} · Sem. ${escapeHtml(String(sp.weekAbs))}/16</span>
@@ -217,7 +245,7 @@ function render() {
             <p class="nf-tile__unitline">${escapeHtml(um.label)} — ${escapeHtml(um.title)}</p>
             ${descPart}
             <div class="nf-tile__actions">
-              <button class="nf-tile__btn nf-tile__btn--solid" type="button" data-action="edit">Editar</button>
+              ${editPart}
               ${pdfPart}
               ${linkPart}
             </div>
@@ -343,6 +371,7 @@ function wireEvents() {
     if (!id) return;
 
     if (action === "edit") {
+      if (article?.getAttribute("data-preset") === "1") return;
       window.open(`./add.html?edit=${encodeURIComponent(id)}`, "_blank", "noopener");
     }
 
