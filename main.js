@@ -71,9 +71,10 @@ function updateHeroSummary(items) {
   const ghOn =
     typeof window.Bd2GitHubSync !== "undefined" &&
     window.Bd2GitHubSync.loadSettings().enabled;
+  const driveWeeks = uniqueWeeks(presetItems);
   const driveChip =
     presetItems.length > 0
-      ? `<li class="nf-chip"><span class="nf-chip__label">${presetItems.length}</span> enlaces Drive (sem. 1–4 · U.I)</li>`
+      ? `<li class="nf-chip"><span class="nf-chip__label">${presetItems.length}</span> enlaces Drive (sem. ${driveWeeks.join(", ")})</li>`
       : "";
   el.innerHTML = `
     <li class="nf-chip"><span class="nf-chip__label">${n}</span> ${actWord}</li>
