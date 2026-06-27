@@ -72,6 +72,21 @@
     8: [
       "https://drive.google.com/file/d/1U1HT7InVLQ--Gc1C_qrOCR_ZJQpJixjA/view?usp=sharing",
     ],
+    9: [
+      "https://drive.google.com/file/d/1dLtqC6FNqeqwkDW6SaxGxsljkjwgiENP/view?usp=sharing",
+      "https://drive.google.com/file/d/1MEYiG2y-m4zHUeiLR-d5xAjvVuRQ1s5B/view?usp=drive_link",
+    ],
+    10: [
+      "https://drive.google.com/file/d/1iCL3bDS_bY10sxDbg2opyl-hh9I4SxDb/view?usp=sharing",
+      "https://drive.google.com/file/d/1u3D-IG3HsgaEXVi0_bJOQOHFFXI4-mOv/view?usp=sharing",
+    ],
+    11: [
+      "https://drive.google.com/file/d/1g9KYtZHIgWxC38yWaKoWtlaHA9Q0EXfX/view?usp=drive_link",
+      "https://drive.google.com/drive/folders/1Ypk126aHFlSrVO0R9pcqBIXFwSewmf1O?usp=sharing",
+    ],
+    12: [
+      "https://drive.google.com/file/d/1gTaY8LO5EPQqK9n9ooYFL0KaR4LBgn9W/view?usp=drive_link",
+    ],
   };
 
   /** Títulos legibles para enlaces Drive (opcional; clave = semana global). */
@@ -86,6 +101,10 @@
     ],
     7: ["Documento semana 7"],
     8: ["Organized"],
+    9: ["5 infografías", "Grados y títulos"],
+    10: ["Manual Azure · infografía", "7 infografías"],
+    11: ["Actividades semana 11", "Carpeta semana 11 (infografías)"],
+    12: ["6 infografías"],
   };
 
   function getPresetDriveActivities() {
