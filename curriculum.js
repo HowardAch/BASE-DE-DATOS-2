@@ -75,6 +75,7 @@
     9: [
       "https://drive.google.com/file/d/1dLtqC6FNqeqwkDW6SaxGxsljkjwgiENP/view?usp=sharing",
       "https://drive.google.com/file/d/1MEYiG2y-m4zHUeiLR-d5xAjvVuRQ1s5B/view?usp=drive_link",
+      "https://drive.google.com/file/d/1ZkH6i191f1Ki1IuehLAAP7YMgS4OfbNd/view?usp=drive_link",
     ],
     10: [
       "https://drive.google.com/file/d/1iCL3bDS_bY10sxDbg2opyl-hh9I4SxDb/view?usp=sharing",
@@ -101,7 +102,7 @@
     ],
     7: ["Documento semana 7"],
     8: ["Organized"],
-    9: ["5 infografías", "Grados y títulos"],
+    9: ["5 infografías", "Grados y títulos", "Manual y código BD UPLA"],
     10: ["Manual Azure · infografía", "7 infografías"],
     11: ["Actividades semana 11", "Carpeta semana 11 (infografías)"],
     12: ["6 infografías"],
